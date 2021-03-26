@@ -1,73 +1,141 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using static DataApp.Menu;
 namespace DataApp
 {
-    public class Employee
+    public class Employee : IEnumerable
     {
-        public Employee()
-        {
-            AllTasks = new List<Task>();
-        }
-       
-
+        
+        [Required]
+        public Guid Id { get; set; }
+        [Required]
+        [MaxLength(36)] 
         public String Name { get; set; }
+        [Required]
+        [MaxLength(36)]
         public String Surname { get; set; }
         public String NickName { get; set; }
-        public List<Task> AllTasks { get; set; }
-        public decimal AllResolvedTaskConst { get; set; }
-        
-    }
-    
-    public class Employees : Employee
-    {
-        public Employees(string name, string surname, string nickName)
+
+        public Employee()
         {
+
+        }
+
+        public Employee(string name, string surname, string nickName)
+        {
+            Id = Guid.NewGuid();
             Name = name;
             Surname = surname;
             NickName = nickName;
-            AllResolvedTaskConst = AllTasks.Count;
         }
-        public Employees()
+
+        public Employee(Employee[] list)
         {
-
+            employeeList = list;
         }
-        public IEnumerator Enumerator { get; set; }
 
-        public IEnumerator GetEnumerator()
+        public static void ModifyEmployee(List<Employee> employees)
         {
-            return Enumerator;
+            Guid userNumberId = new();
+            try
+            {
+                int userTaskNumber = int.Parse(Console.ReadLine()) - 1;
+                userNumberId = employees.ElementAt(userTaskNumber).Id;
+
+                var findIndexOfUser = employees.FindIndex(e => e.Id == userNumberId);
+
+                Console.WriteLine("Enter Name:");
+                string userName = Console.ReadLine();
+
+                Console.WriteLine("Enter Surname:");
+                string userSurname = Console.ReadLine();
+
+                Console.WriteLine("Enter Nickname:");
+                string userNickname = Console.ReadLine();
+
+                employees[findIndexOfUser].Name = userName;
+                employees[findIndexOfUser].Surname = userSurname;
+                employees[findIndexOfUser].NickName = userNickname;
+
+                Console.WriteLine("Done!");
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Invalid input!");
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                Console.WriteLine("Invalid range!");
+            }
         }
 
-        List<Employee> lstEmployee = new List<Employee>();
-        public void AddEmployee(string name, string surname, string nickName)
+        public static Guid ChoiceEmployee(List<Employee> employees)
         {
-            Employee employee = new Employee();
-     
-            employee.Name = name;
-            employee.Surname = surname;
-            employee.NickName = nickName;
-            employee.AllResolvedTaskConst = AllTasks.Count;
+            MenuTextResult("Select a user(ex: 1)");
 
-            lstEmployee.Add(employee);       
+            PrintEmployees(employees);
+            Console.WriteLine("Your imput:");
+
+            Guid userChoiceEmployeeId = new();
+
+            try
+            {
+                int userSelectedEmployee = int.Parse(Console.ReadLine());
+                userChoiceEmployeeId = employees.ElementAt(userSelectedEmployee - 1).Id;
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Invalid input!");
+            }
+            return userChoiceEmployeeId;
         }
-        
-        public void printEmployee()
+
+        public static void AddEmployee(List<Employee> employees)
         {
+            try
+            {
+                Console.WriteLine("Enter Name:");
+                string userName = Console.ReadLine();
 
-            Console.WriteLine(
-               "Name: ", Name +
-               " Surname: ", Surname +
-               " Nick name: ", NickName +
-               " All resolvedTask: ", AllResolvedTaskConst
-               );
+                Console.WriteLine("Enter Surname:");
+                string userSurname = Console.ReadLine();
+
+                Console.WriteLine("Enter Nickname:");
+                string userNickname = Console.ReadLine();
+
+                employees.Add(new Employee() { Id = Guid.NewGuid(), Name = userName, Surname = userSurname, NickName = userNickname });
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Error!");
+            }
+            Console.Clear();
         }
-       
 
+        public static void CopyEmployeeToList(List<Employee> employees, Employee employee)
+        {
+            employees.Add(employee);
+        }
+
+        public static void PrintEmployees(List<Employee> employees)
+        {
+            if (employees != null)
+            {
+                int j = 1;
+                foreach (var employee in employees)
+                {
+                    Console.WriteLine($"{j}. Name: {employee.Name}; Surname: {employee.Surname}; Nickname: {employee.NickName};");
+                    j++;
+                }
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("Please add an employee!");
+            }
+        }
     }
-  
+
 }

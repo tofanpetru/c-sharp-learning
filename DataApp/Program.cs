@@ -1,141 +1,139 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-
+using static DataApp.Menu;
+using static DataApp.Employee;
+using static DataApp.Task;
 namespace DataApp
 {
     class Program
     {
-        enum Menu
-        {
-            addUser=1,
-            showAllUsers=2,
-            choiceUser=3,
-            modifyUser=4,
-            modifyTask=5,
-            exit = 6
-        }
-
-        enum UserChoice
-        {
-            showAllTaskOfUser=1,
-            addTaskUser=2,
-            completeUserTask=3,
-            exit=4
-        }
 
         static void Main(string[] args)
         {
-            List<Employees> employees = new List<Employees>();
-            
-            Employees defaultEmployee1 = new Employees("Ion","Avsg","IoN");
-            Task defaultTaskList1 = new Task("Micro task1", new DateTime(2021, 12, 25), "none", TaskPriority.Hight, 111, State.incomplete);
-            Task defaultTaskList2 = new Task("Micro task2", new DateTime(2022, 12, 25), "none", TaskPriority.Medium, 191997, State.complete);
-            //defaultEmployee1.AddEmployee("Ionel", "White", "IoNeL");
-            defaultEmployee1.AllTasks.Add(defaultTaskList1);
-            defaultEmployee1.AllTasks.Add(defaultTaskList2);
-            //defaultEmployee1.printEmployee();
-            if (defaultEmployee1 != null)
+            if (args is null)
             {
-                int j = 0;
-                foreach (Employees emp in defaultEmployee1)
-                {
-                    Console.WriteLine($"{j}. Name: {emp.Name} Surname: {emp.Surname} Nickname: {emp.NickName}  All resolved tasks: {emp.AllTasks.Count} ");
-                    j++;
-                    
-                }
-            }
-            Console.WriteLine();
-            if (defaultTaskList1 != null)
-            {
-                int k = 0;
-                foreach (var emp in defaultEmployee1.AllTasks)
-                {
-                    Console.WriteLine($"{k}. Task name:{emp.TaskName}  Date of creation:{emp.DateOfCreation}  Date of effectuation:{emp.DateOfEffectuation}  Aditional details:{emp.AdditionalDetails}  Priority:{emp.Priority}  Task cost:{emp.TaskCost}  State:{emp.State} ");
-                    k++;
-
-                }
+                throw new ArgumentNullException(nameof(args));
             }
 
+            List<Employee> employees = new();//all employees
+            List<Task> tasks = new();//all tasks
 
-            Console.WriteLine(
-                        "1. Add user\n" +
-                        "2. Show all users\n" +
-                        "3. Choice user\n" +
-                        "4. Modify user\n" +
-                        "5. Modify task\n" +
-                        "6. Exit from application\n");
+            //default Employee
+            Employee defaultEmployee = new("Ion", "Baron", "IBaron");
 
-            int choice = Convert.ToInt32(Console.ReadLine());
-            int subChoice = Convert.ToInt32(Console.ReadLine());
-
+            CopyEmployeeToList(employees, defaultEmployee);
             
-            Menu userChoice = new Menu();
-            userChoice = (Menu)choice;
+            int choice = 0;
+            int subChoice = 0;
 
-            UserChoice subUserChoice = new UserChoice();
-            subUserChoice = (UserChoice)subChoice;
+            bool menuAllNotDone = true;
 
-            Employees employee = new Employees();
+            var idState = new AutoIncrement();//auto increment task id
 
-            switch (userChoice)
+            while (menuAllNotDone)
             {
-                case Menu.addUser:
-                    Console.WriteLine("Add user");
-                    break;
-                case Menu.showAllUsers:
-                    Console.WriteLine("All users");
-                    break;
-                case Menu.choiceUser:
-                    Console.WriteLine("Select a user:");
+                Menu.PrincipalMenu();//menu display
 
-                    Console.WriteLine(
-                        "1. All tasks\n" +
-                        "2. Add task\n" +
-                        "3. Complete task\n");
+                choice = InputValidInt(choice);
 
-                    switch (subUserChoice)
-                    {
-                        case UserChoice.showAllTaskOfUser:
-                            Console.WriteLine("All task of user");
-                            if (defaultEmployee1 != null)
+                UserMenu userChoice = MenuChoice(choice);
+
+                switch (userChoice)
+                {
+                    case UserMenu.addUser:
+                        MenuTextResult("Add user");
+
+                        AddEmployee(employees);
+
+                        break;
+                    case UserMenu.showAllUsers:
+                        MenuTextResult("All users:");
+
+                        PrintEmployees(employees);
+                        break;
+                    case UserMenu.choiceUser:
+                        try
+                        {
+                            Guid idUserSelected = ChoiceEmployee(employees);
+
+                            Menu.SubMenuUserChoice();//sub menu display
+
+                            subChoice = InputValidInt(subChoice);
+                            UserChoice subUserChoice = SubMenuChoice(subChoice);
+
+                            switch (subUserChoice)
                             {
-                                int k = 1;
-                                foreach (var emp in defaultEmployee1.AllTasks)
-                                {
-                                    Console.WriteLine($"{k}. Task name: {emp.TaskName}  Date of creation: {emp.DateOfCreation}  Date of effectuation: {emp.DateOfEffectuation}  Aditional details: {emp.AdditionalDetails}  Priority: {emp.Priority}  Task cost: {emp.TaskCost}  State: {emp.State} ");
-                                    k++;
+                                case UserChoice.showAllTaskOfUser:
+                                    MenuTextResult("All tasks of selected user");
 
-                                }
+                                    ShowAllTasksOfUser(tasks, idUserSelected);
+
+                                    Console.ReadKey();
+                                    break;
+                                case UserChoice.addTaskUser:
+                                    MenuTextResult("Add task");
+
+                                    AddTaskIndividualUser(tasks, idUserSelected, idState.GenerateId());
+
+                                    break;
+                                case UserChoice.completeUserTask:
+                                    MenuTextResult("Complete task");
+
+                                    CompleteEmployeeTask(tasks, idUserSelected);
+
+                                    break;
+                                default:
+                                    MenuTextResult("Error ! invalid choice");
+                                    break;
                             }
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            Console.WriteLine("Invalid range!");
                             break;
-                        case UserChoice.addTaskUser:
-                            Console.WriteLine("Add task");
-                            break;
-                        case UserChoice.completeUserTask:
-                            Console.WriteLine("Complete tasks");
-                            break;
-                        case UserChoice.exit:
-                            break;
+                        }
+                        break;
+                    case UserMenu.modifyUser:
+                        MenuTextResult("Modify user");
+
+                        PrintEmployees(employees);
+
+                        Console.WriteLine("Select user: ");
+
+                        ModifyEmployee(employees);
                         
-                        default:
-                            Console.WriteLine("Error ! invalid choice");
-                            break;
-                    }
-                    break;
-                case Menu.modifyUser:
-                    Console.WriteLine("Modify user");
-                    break;
-                case Menu.modifyTask:
-                    Console.WriteLine("Modify task");
-                    break;
-                case Menu.exit:
-                    break;
-                
-                default:
-                    Console.WriteLine("Error ! invalid choice");
-                    break;
+                        break;
+                    case UserMenu.modifyTask:
+                        MenuTextResult("Modify task");
+
+                        ModifyTask(tasks);
+                        break;
+                    case UserMenu.exit:
+                        menuAllNotDone = false;
+
+                        break;
+                    default:
+                        MenuTextResult("Error ! invalid choice");
+                        break;
+                }
             }
+
         }
+
+        private static int InputValidInt(int choice)
+        {
+            try
+            {
+                choice = int.Parse(Console.ReadLine());
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("An int will be entered!");
+            }
+            return choice;
+        }
+
+        
+
     }
 }
